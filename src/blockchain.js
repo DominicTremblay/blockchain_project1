@@ -33,7 +33,6 @@ class Blockchain {
    * Passing as a data `{data: 'Genesis Block'}`
    */
   async initializeChain() {
-    console.log('INITIALIZE CHAIN');
     if (this.height === -1) {
       let block = new BlockClass.Block({ data: 'Genesis Block' });
       await this._addBlock(block);
@@ -66,33 +65,21 @@ class Blockchain {
     return new Promise(async (resolve, reject) => {
       let chainHeight = await this.getChainHeight();
 
-      console.log('ADD NEW BLOCK');
-      console.log({ chainHeight });
-      console.log(self.chain);
-
       // Assign the previous block hash only if it's not the genesis block
       if (chainHeight > 0) {
-        console.log('Previous block hash', self.chain[chainHeight - 1].hash);
         block.previousBlockHash = self.chain[chainHeight - 1].hash;
-      } else {
-        console.log('GENESIS BLOCK');
-      }
+      } 
       chainHeight = self.chain.length + 1; // increase the eight of the chain
       block.time = new Date().getTime().toString().slice(0, -3);
       block.height = chainHeight;
       // create the hash of the block
       block.hash = SHA256(JSON.stringify(block)).toString();
 
-      // need validation here to validate the chain?
-
       // add the block onto the blockchain
       self.chain.push(block);
 
       // update the height of the chain
       self.height = chainHeight;
-
-      console.log('After adding block', { chainHeight });
-      console.log(self.chain);
 
       resolve(block);
     });
@@ -135,8 +122,6 @@ class Blockchain {
    * @param {*} star
    */
   async submitStar(address, message, signature, star) {
-    console.log('Submit Star');
-    console.log({ address, message, signature, star });
     let self = this;
     return new Promise(async (resolve, reject) => {
       const msgTime = parseInt(message.split(':')[1]);
@@ -144,12 +129,10 @@ class Blockchain {
         new Date().getTime().toString().slice(0, -3)
       );
 
-      console.log({ msgTime, currentTime });
-
       // Check if the time elapsed is less than 5 minutes &&
       // Verify the message with wallet address and signature
       const validatedSubmission =
-        (currentTime - msgTime) / 60 < 60 &&
+        (currentTime - msgTime) / 60 < 5 &&
         bitcoinMessage.verify(message, address, signature);
 
       // if valid create the new block and add it to the chain
