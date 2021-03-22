@@ -78,7 +78,6 @@ class Blockchain {
       // validate the chain every time a new block is added
       const errors = await self.validateChain();
 
-      console.log(errors);
 
       if (errors.length < 1) {
         // add the block onto the blockchain
@@ -250,7 +249,6 @@ class Blockchain {
         }
       });
 
-      console.log({ invalidBlocks });
 
       resolve(invalidBlocks);
     });
