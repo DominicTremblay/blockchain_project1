@@ -47,18 +47,14 @@ class Block {
       const newBlockHash = SHA256(JSON.stringify(self)).toString();
       // Comparing if the hashes changed
 
-      console.log({ currentBlockHash, newBlockHash });
-
       // restore hash
       self.hash = currentBlockHash;
 
-      if (currentBlockHash === newBlockHash) {
-        // Returning the Block is valid
-        resolve(true);
-      } else {
-        // Returning the Block is not valid
-        reject(`Block hash: ${self.hash} is invalid`);
-      }
+      const valid = currentBlockHash === newBlockHash;
+
+      // resolve true or false
+      resolve(valid);
+      
     });
   }
 
