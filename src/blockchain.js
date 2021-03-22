@@ -76,9 +76,9 @@ class Blockchain {
       block.hash = SHA256(JSON.stringify(block)).toString();
 
       // validate the chain every time a new block is added
-      const blockValid = block.validate();
+      const errors = await self.validateChain();
 
-      if (blockValid) {
+      if (errors.length < 1) {
         // add the block onto the blockchain
         self.chain.push(block);
         // update the height of the chain
@@ -219,9 +219,11 @@ class Blockchain {
    */
   validateChain() {
     let self = this;
-    // let errorLog = [];
-    return new Promise(async (resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
       const errorLog = self.chain.filter(async (block) => {
+
+
+
         const blockValidation = await block.validate();
 
         if (!blockValidation) {
