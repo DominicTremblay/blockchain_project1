@@ -78,6 +78,8 @@ class Blockchain {
       // validate the chain every time a new block is added
       const errors = await self.validateChain();
 
+      console.log(errors);
+
       if (errors.length < 1) {
         // add the block onto the blockchain
         self.chain.push(block);
@@ -136,15 +138,27 @@ class Blockchain {
 
       // Check if the time elapsed is less than 5 minutes &&
       // Verify the message with wallet address and signature
+      const timeDifference = (currentTime - msgTime) / 60;
+
+      console.log({ timeDifference });
+      console.log(
+        'bitcoinMessage Verify',
+        bitcoinMessage.verify(message, address, signature)
+      );
+
       const validatedSubmission =
-        (currentTime - msgTime) / 60 < 5 &&
+        timeDifference < 50 &&
         bitcoinMessage.verify(message, address, signature);
 
       // if valid create the new block and add it to the chain
       if (validatedSubmission) {
         const block = new BlockClass.Block({ data: { star, owner: address } });
-        await self._addBlock(block);
-        resolve(block);
+        try {
+          await self._addBlock(block);
+          resolve(block);
+        } catch (err) {
+          reject(err);
+        }
       } else {
         reject('invalid bitcoin message or transaction timed out');
       }
@@ -219,25 +233,26 @@ class Blockchain {
    */
   validateChain() {
     let self = this;
-      return new Promise(async (resolve, reject) => {
-      const errorLog = self.chain.filter(async (block, index, chain) => {
-
+    let invalidBlocks = [];
+    return new Promise(async (resolve, reject) => {
+      self.chain.forEach(async (block, index, chain) => {
         // check the previous block hash if not the genesis block
         if (index > 0) {
           const previousBlock = chain[index - 1];
           if (block.previousBlockHash !== previousBlock.hash) {
-            return('Previous block hash does not match')
+            invalidBlocks.push({ error: 'invalid previous block hash', block });
           }
         }
 
         const blockValidation = await block.validate();
-
         if (!blockValidation) {
-          return 'Block is invalid';
+          invalidBlocks.push({ error: 'invalid block', block });
         }
       });
 
-      resolve(errorLog);
+      console.log({ invalidBlocks });
+
+      resolve(invalidBlocks);
     });
   }
 }
