@@ -220,14 +220,20 @@ class Blockchain {
   validateChain() {
     let self = this;
       return new Promise(async (resolve, reject) => {
-      const errorLog = self.chain.filter(async (block) => {
+      const errorLog = self.chain.filter(async (block, index, chain) => {
 
-
+        // check the previous block hash if not the genesis block
+        if (index > 0) {
+          const previousBlock = chain[index - 1];
+          if (block.previousBlockHash !== previousBlock.hash) {
+            return('Previous block hash does not match')
+          }
+        }
 
         const blockValidation = await block.validate();
 
         if (!blockValidation) {
-          return blockValidation;
+          return 'Block is invalid';
         }
       });
 
