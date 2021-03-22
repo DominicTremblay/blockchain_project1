@@ -68,20 +68,25 @@ class Blockchain {
       // Assign the previous block hash only if it's not the genesis block
       if (chainHeight > 0) {
         block.previousBlockHash = self.chain[chainHeight - 1].hash;
-      } 
+      }
       chainHeight = self.chain.length + 1; // increase the eight of the chain
       block.time = new Date().getTime().toString().slice(0, -3);
       block.height = chainHeight;
       // create the hash of the block
       block.hash = SHA256(JSON.stringify(block)).toString();
 
-      // add the block onto the blockchain
-      self.chain.push(block);
+      // validate the chain every time a new block is added
+      const blockValid = block.validate();
 
-      // update the height of the chain
-      self.height = chainHeight;
-
-      resolve(block);
+      if (blockValid) {
+        // add the block onto the blockchain
+        self.chain.push(block);
+        // update the height of the chain
+        self.height = chainHeight;
+        resolve(block);
+      } else {
+        reject('Block is invalid');
+      }
     });
   }
 
